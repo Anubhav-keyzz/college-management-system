@@ -60,6 +60,28 @@ def create_assignment(request):
         'title': 'Create Assignment', 'action': 'Create', 'classes': classes
     })
 
+MAX_SUBMISSION_SIZE = 500 * 1024  # 500 KB
+
+@login_required
+def submit_assignment(request, pk):
+    a = get_object_or_404(Assignment, pk=pk)
+    if not request.user.is_student:
+        return redirect('assignment_list')
+    if request.method == 'POST':
+        uploaded_file = request.FILES.get('file')
+        # ── 500 KB guard ──────────────────────────────────────
+        if uploaded_file and uploaded_file.size > MAX_SUBMISSION_SIZE:
+            messages.error(request, f'File too large. Max allowed is 500 KB. Your file is {uploaded_file.size // 1024} KB.')
+            submission = AssignmentSubmission.objects.filter(assignment=a, student=request.user).first()
+            return render(request, 'assignments/submit_assignment.html', {'assignment': a, 'submission': submission})
+        # ─────────────────────────────────────────────────────
+        sub, _ = AssignmentSubmission.objects.get_or_create(assignment=a, student=request.user)
+        sub.text = request.POST.get('text', '')
+        if uploaded_file:
+            sub.file = uploaded_file
+        sub.save()
+        ...
+
 
 @login_required
 def edit_assignment(request, pk):

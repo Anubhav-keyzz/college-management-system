@@ -34,7 +34,7 @@
             value="{% if assignment.due_date %}{{ assignment.due_date|date:'Y-m-d' }}T{{ assignment.due_date|time:'H:i' }}{% endif %}"/>
         </div>
         <div class="form-group">
-          <label>Attachment <span style="font-weight:400;color:var(--gray-400);">(optional)</span></label>
+          <label>Attachment <span style="font-weight:400;color:var(--gray-400);">(optional, max 500kb size file )</span></label>
           <input type="file" name="file"/>
           {% if assignment.file %}<div class="form-hint">Current: <a href="{{ assignment.file.url }}" target="_blank">{{ assignment.file.name }}</a></div>{% endif %}
         </div>
