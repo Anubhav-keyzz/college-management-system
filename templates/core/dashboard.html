@@ -6,6 +6,12 @@
 {% block content %}
 {% if user.is_admin %}
 <!-- ADMIN DASHBOARD -->
+ <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
+  <span style="font-size:13px;font-weight:600;color:var(--gray-500);"> Export Report:</span>
+  <a href="{% url 'export_excel' %}" class="btn btn-success"> Download Excel</a>
+  <a href="{% url 'export_pdf' %}" class="btn btn-danger">Download PDF</a>
+</div>
+
 <div class="stats-grid">
   <div class="stat-card">
     <div class="stat-icon blue"></div>

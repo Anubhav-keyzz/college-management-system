@@ -7,4 +7,6 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('export/excel/', views.export_excel, name='export_excel'),
+    path('export/pdf/',   views.export_pdf,   name='export_pdf'),
 ]

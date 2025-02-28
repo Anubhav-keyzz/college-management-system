@@ -2,91 +2,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>{% block title %}College Management System{% endblock %}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="{% static 'css/main.css' %}"/>
-{% block extra_css %}{% endblock %}
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}EduManage{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}"/>
 </head>
 <body>
+
+<!-- Mobile sidebar overlay (dark backdrop) -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
 <div class="layout">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
+
+  <!-- ========== SIDEBAR ========== -->
+  <aside class="sidebar" id="sidebar">
+
     <div class="sidebar-brand">
-      
+      <div class="brand-icon">🎓</div>
       <div class="brand-text">
-        
-        <h2> College Management</h2>
+        <h2>EduManage</h2>
+        <p>College Management</p>
       </div>
     </div>
+
     <nav class="sidebar-nav">
+
       <div class="nav-section">
         <div class="nav-section-title">Main</div>
-        <a href="{% url 'dashboard' %}" class="nav-item"><span class="nav-icon"></span> Dashboard</a>
+        <a href="{% url 'dashboard' %}" class="nav-item">
+          <span class="nav-icon">🏠</span> Dashboard
+        </a>
       </div>
+
+      {% if user.is_admin or user.is_teacher %}
       <div class="nav-section">
         <div class="nav-section-title">Academic</div>
-        <a href="{% url 'course_list' %}" class="nav-item"><span class="nav-icon"></span> Courses</a>
-        <a href="{% url 'class_list' %}" class="nav-item"><span class="nav-icon"></span> Classes</a>
-        <a href="{% url 'attendance_list' %}" class="nav-item"><span class="nav-icon"></span> Attendance</a>
-        <a href="{% url 'assignment_list' %}" class="nav-item"><span class="nav-icon"></span> Assignments</a>
+        {% if user.is_admin %}
+        <a href="{% url 'course_list' %}" class="nav-item">
+          <span class="nav-icon">📚</span> Courses
+        </a>
+        {% endif %}
+        <a href="{% url 'class_list' %}" class="nav-item">
+          <span class="nav-icon">🏫</span> Classes
+        </a>
+        <a href="{% url 'assignment_list' %}" class="nav-item">
+          <span class="nav-icon">📝</span> Assignments
+        </a>
+        <a href="{% url 'attendance_list' %}" class="nav-item">
+          <span class="nav-icon">✅</span> Attendance
+        </a>
       </div>
-      
+      {% endif %}
+
+      {% if user.is_student %}
+      <div class="nav-section">
+        <div class="nav-section-title">My Studies</div>
+        <a href="{% url 'assignment_list' %}" class="nav-item">
+          <span class="nav-icon">📝</span> Assignments
+        </a>
+        <a href="{% url 'attendance_list' %}" class="nav-item">
+          <span class="nav-icon">✅</span> Attendance
+        </a>
+      </div>
+      {% endif %}
+
       {% if user.is_admin %}
       <div class="nav-section">
         <div class="nav-section-title">Administration</div>
-        <a href="{% url 'user_list' %}" class="nav-item"><span class="nav-icon"></span> Users</a>
-        <a href="{% url 'user_list' %}?role=student" class="nav-item"><span class="nav-icon"></span> Students</a>
-        <a href="{% url 'user_list' %}?role=teacher" class="nav-item"><span class="nav-icon"></span> Teachers</a>
+        <a href="{% url 'user_list' %}" class="nav-item">
+          <span class="nav-icon">👥</span> Users
+        </a>
       </div>
       {% endif %}
+
     </nav>
+
     <div class="sidebar-footer">
       <div class="sidebar-user">
-        <div class="avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+        <div class="avatar">
+          {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+        </div>
         <div class="user-info">
           <p>{{ user.get_full_name|default:user.username }}</p>
           <span>{{ user.role|capfirst }}</span>
         </div>
       </div>
-      <a href="{% url 'profile' %}" class="btn-logout" style="margin-bottom:8px;"> &nbsp;My Profile</a>
-      <a href="{% url 'logout' %}" class="btn-logout"> &nbsp;Logout</a>
+      <a href="{% url 'logout' %}" class="btn-logout">
+        <span>🚪</span> Logout
+      </a>
     </div>
-  </aside>
 
-  <!-- MAIN -->
+  </aside>
+  <!-- ========== END SIDEBAR ========== -->
+
+  <!-- ========== MAIN CONTENT ========== -->
   <div class="main-content">
+
+    <!-- TOPBAR -->
     <header class="topbar">
       <div class="topbar-left">
-        <button id="sidebar-toggle" style="background:none;border:none;cursor:pointer;font-size:20px;display:none;">☰</button>
+        <!-- Hamburger button — visible only on mobile via CSS -->
+        <button id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
         <div>
-          <div class="page-title">{% block page_title %}Dashboard{% endblock %}</div>
-          <div class="breadcrumb">{% block breadcrumb %}Home{% endblock %}</div>
+          <div class="page-title">{% block page_title %}{% endblock %}</div>
+          <div class="breadcrumb">{% block breadcrumb %}{% endblock %}</div>
         </div>
       </div>
       <div class="topbar-right">
+        <span style="font-size:13px;color:var(--gray-500);">{{ user.get_full_name|default:user.username }}</span>
         <span class="badge badge-{{ user.role }}">{{ user.role|capfirst }}</span>
       </div>
     </header>
+    <!-- END TOPBAR -->
 
+    <!-- PAGE BODY -->
     <main class="page-body">
+
+      <!-- Django messages -->
       {% if messages %}
       <div class="messages-container">
         {% for msg in messages %}
         <div class="alert alert-{{ msg.tags|default:'info' }}">
-          {% if msg.tags == 'success' %}{% elif msg.tags == 'error' %}{% elif msg.tags == 'warning' %}{% else %}{% endif %}
+          {% if msg.tags == 'success' %}✅{% elif msg.tags == 'error' %}❌{% elif msg.tags == 'warning' %}⚠️{% else %}ℹ️{% endif %}
           {{ msg }}
         </div>
         {% endfor %}
       </div>
       {% endif %}
+
       {% block content %}{% endblock %}
+
     </main>
+    <!-- END PAGE BODY -->
+
   </div>
+  <!-- ========== END MAIN CONTENT ========== -->
+
 </div>
+
 <script src="{% static 'js/main.js' %}"></script>
-{% block extra_js %}{% endblock %}
 </body>
 </html>
