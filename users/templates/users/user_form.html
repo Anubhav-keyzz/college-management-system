@@ -1,0 +1,75 @@
+<!-- User create/edit form -->
+{% extends 'base.html' %}
+{% block title %}{{ title }} — EduManage{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block breadcrumb %}Users / {{ title }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:700px;">
+  <div class="card-header">
+    <h3 class="card-title">{{ title }}</h3>
+  </div>
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-grid form-grid-2">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" name="first_name" value="{{ user_obj.first_name|default:'' }}" placeholder="First name"/>
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" name="last_name" value="{{ user_obj.last_name|default:'' }}" placeholder="Last name"/>
+        </div>
+        <div class="form-group">
+          <label>Username *</label>
+          <input type="text" name="username" value="{{ user_obj.username|default:'' }}" placeholder="username" required/>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" value="{{ user_obj.email|default:'' }}" placeholder="email@example.com"/>
+        </div>
+        <div class="form-group">
+          <label>Role *</label>
+          <select name="role" required>
+            <option value="">— Select Role —</option>
+            <option value="admin" {% if user_obj.role == 'admin' %}selected{% endif %}>Admin</option>
+            <option value="teacher" {% if user_obj.role == 'teacher' %}selected{% endif %}>Teacher</option>
+            <option value="student" {% if user_obj.role == 'student' %}selected{% endif %}>Student</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" name="phone" value="{{ user_obj.phone|default:'' }}" placeholder="+977-98XXXXXXXX"/>
+        </div>
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date" name="date_of_birth" value="{{ user_obj.date_of_birth|default:'' }}"/>
+        </div>
+        {% if action == 'Create' %}
+        <div class="form-group">
+          <label>Password *</label>
+          <input type="password" name="password" required placeholder="Enter password"/>
+        </div>
+        <div class="form-group">
+          <label>Confirm Password *</label>
+          <input type="password" name="confirm_password" required placeholder="Confirm password"/>
+        </div>
+        {% else %}
+        <div class="form-group">
+          <label>New Password <span style="color:var(--gray-400);font-weight:400;">(leave blank to keep)</span></label>
+          <input type="password" name="password" placeholder="New password (optional)"/>
+        </div>
+        {% endif %}
+        <div class="form-group full-width">
+          <label>Address</label>
+          <textarea name="address" placeholder="Full address">{{ user_obj.address|default:'' }}</textarea>
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top:24px;">
+        <button type="submit" class="btn btn-primary"> {{ action }}</button>
+        <a href="{% url 'user_list' %}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

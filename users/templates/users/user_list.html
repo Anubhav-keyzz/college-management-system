@@ -1,0 +1,55 @@
+<!-- User list page - shows all users with filter by role -->
+{% extends 'base.html' %}
+{% block title %}Users {% endblock %}
+{% block page_title %}Users{% endblock %}
+{% block breadcrumb %}Administration / Users{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title"> All Users</h3>
+    <a href="{% url 'create_user' %}" class="btn btn-primary"> Add User</a>
+  </div>
+  <div class="filter-bar">
+    <input type="text" id="table-search" placeholder=" Search users..." style="min-width:220px;"/>
+    <a href="?role=" class="btn btn-sm {% if not role_filter %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
+    <a href="?role=admin" class="btn btn-sm {% if role_filter == 'admin' %}btn-primary{% else %}btn-secondary{% endif %}">Admins</a>
+    <a href="?role=teacher" class="btn btn-sm {% if role_filter == 'teacher' %}btn-primary{% else %}btn-secondary{% endif %}">Teachers</a>
+    <a href="?role=student" class="btn btn-sm {% if role_filter == 'student' %}btn-primary{% else %}btn-secondary{% endif %}">Students</a>
+  </div>
+  {% if users %}
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>#</th><th>Name</th><th>Username</th><th>Email</th><th>Role</th><th>Phone</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td style="color:var(--gray-400);font-size:12px;">{{ forloop.counter }}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:34px;height:34px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;flex-shrink:0;">
+                {{ u.first_name|first|upper }}{{ u.last_name|first|upper }}
+              </div>
+              <div>
+                <div style="font-weight:600;">{{ u.get_full_name|default:u.username }}</div>
+                {% if u.date_of_birth %}<div style="font-size:11px;color:var(--gray-400);">DOB: {{ u.date_of_birth }}</div>{% endif %}
+              </div>
+            </div>
+          </td>
+          <td><code style="background:var(--gray-100);padding:2px 8px;border-radius:4px;font-size:12px;">{{ u.username }}</code></td>
+          <td>{{ u.email|default:"—" }}</td>
+          <td><span class="badge badge-{{ u.role }}">{{ u.role|capfirst }}</span></td>
+          <td>{{ u.phone|default:"—" }}</td>
+          <td>
+            <a href="{% url 'edit_user' u.pk %}" class="btn btn-sm btn-warning"> Edit</a>
+            <a href="{% url 'delete_user' u.pk %}" class="btn btn-sm btn-danger" data-confirm="Delete user '{{ u.username }}'?">🗑 Delete</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><div class="empty-icon"></div><p>No users found</p><div class="empty-sub"><a href="{% url 'create_user' %}" class="btn btn-primary" style="margin-top:12px;">➕ Add First User</a></div></div>
+  {% endif %}
+</div>
+{% endblock %}
