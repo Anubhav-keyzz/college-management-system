@@ -1,0 +1,63 @@
+<!-- Course create/edit form -->
+{% extends 'base.html' %}
+{% block title %}{{ title }} — EduManage{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block breadcrumb %}Courses / {{ title }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:760px;">
+  <div class="card-header"><h3 class="card-title">{{ title }}</h3></div>
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-grid form-grid-2">
+        <div class="form-group">
+          <label>Course Name *</label>
+          <input type="text" name="name" value="{{ course.name|default:'' }}" required placeholder="e.g. Introduction to Computing"/>
+        </div>
+        <div class="form-group">
+          <label>Course Code *</label>
+          <input type="text" name="code" value="{{ course.code|default:'' }}" required placeholder="e.g. CS101"/>
+        </div>
+        <div class="form-group">
+          <label>Credits</label>
+          <input type="number" name="credits" value="{{ course.credits|default:3 }}" min="1" max="10"/>
+        </div>
+        <div class="form-group">
+          <label>Assign Teacher</label>
+          <select name="teacher">
+            <option value="">— No Teacher —</option>
+            {% for t in teachers %}
+            <option value="{{ t.pk }}" {% if course.teacher_id == t.pk %}selected{% endif %}>
+              {{ t.get_full_name|default:t.username }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group full-width">
+          <label>Description</label>
+          <textarea name="description" placeholder="Course description...">{{ course.description|default:'' }}</textarea>
+        </div>
+        <div class="form-group full-width">
+          <label>Enroll Students</label>
+          <div style="display:flex;gap:8px;margin-bottom:6px;">
+            <button type="button" class="btn btn-sm btn-secondary" data-select-all="#students-select">Select All</button>
+            <button type="button" class="btn btn-sm btn-secondary" data-deselect-all="#students-select">Deselect All</button>
+          </div>
+          <select name="students" id="students-select" multiple>
+            {% for s in students %}
+            <option value="{{ s.pk }}" {% if s in course.students.all %}selected{% endif %}>
+              {{ s.get_full_name|default:s.username }} ({{ s.username }})
+            </option>
+            {% endfor %}
+          </select>
+          <div class="form-hint">Hold Ctrl/Cmd to select multiple students</div>
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top:20px;">
+        <button type="submit" class="btn btn-primary"> {{ action }}</button>
+        <a href="{% url 'course_list' %}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

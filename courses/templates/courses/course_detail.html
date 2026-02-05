@@ -1,0 +1,78 @@
+<!-- Course detail page - shows enrolled students and classes -->
+{% extends 'base.html' %}
+{% block title %}{{ course.name }} — EduManage{% endblock %}
+{% block page_title %}{{ course.name }}{% endblock %}
+{% block breadcrumb %}Courses / {{ course.code }}{% endblock %}
+{% block content %}
+<div class="detail-grid">
+  <div>
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <h3 class="card-title"> Course Details</h3>
+        {% if user.is_admin %}
+        <div style="display:flex;gap:8px;">
+          <a href="{% url 'edit_course' course.pk %}" class="btn btn-sm btn-warning"> Edit</a>
+          <a href="{% url 'delete_course' course.pk %}" class="btn btn-sm btn-danger" data-confirm="Delete this course?">🗑</a>
+        </div>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <ul class="info-list">
+          <li><span class="info-label">Course Code</span><span class="badge badge-primary">{{ course.code }}</span></li>
+          <li><span class="info-label">Name</span><strong>{{ course.name }}</strong></li>
+          <li><span class="info-label">Credits</span>{{ course.credits }}</li>
+          <li><span class="info-label">Teacher</span>{{ course.teacher.get_full_name|default:"Not assigned" }}</li>
+          <li><span class="info-label">Total Students</span>{{ course.students.count }}</li>
+          <li><span class="info-label">Created</span>{{ course.created_at|date:"M d, Y" }}</li>
+        </ul>
+        {% if course.description %}
+        <div style="margin-top:16px;padding:16px;background:var(--gray-50);border-radius:8px;">
+          <div style="font-size:12px;font-weight:600;color:var(--gray-400);margin-bottom:6px;">DESCRIPTION</div>
+          <p style="font-size:14px;">{{ course.description }}</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3 class="card-title"> Classes</h3></div>
+      {% if course.classrooms.all %}
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Class</th><th>Section</th><th>Teacher</th><th>Students</th></tr></thead>
+          <tbody>
+            {% for cls in course.classrooms.all %}
+            <tr>
+              <td><a href="{% url 'class_detail' cls.pk %}" style="font-weight:600;color:var(--primary);">{{ cls.name }}</a></td>
+              <td>{{ cls.section|default:"—" }}</td>
+              <td>{{ cls.teacher.get_full_name|default:"—" }}</td>
+              <td>{{ cls.students.count }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}<div class="empty-state" style="padding:24px;"><p>No classes for this course</p></div>{% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h3 class="card-title"> Enrolled Students</h3></div>
+    {% if course.students.all %}
+    <ul class="info-list" style="padding:0 24px;">
+      {% for s in course.students.all %}
+      <li>
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--success);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;">
+          {{ s.first_name|first|upper }}
+        </div>
+        <div>
+          <div style="font-weight:600;font-size:13px;">{{ s.get_full_name|default:s.username }}</div>
+          <div style="font-size:11px;color:var(--gray-400);">{{ s.email|default:s.username }}</div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<div class="empty-state" style="padding:24px;"><p>No students enrolled</p></div>{% endif %}
+  </div>
+</div>
+{% endblock %}
