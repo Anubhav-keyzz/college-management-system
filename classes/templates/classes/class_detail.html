@@ -1,0 +1,107 @@
+<!-- Class detail page - shows students, attendance, assignments -->
+{% extends 'base.html' %}
+{% block title %}{{ cls.name }} — EduManage{% endblock %}
+{% block page_title %}{{ cls.name }}{% endblock %}
+{% block breadcrumb %}Classes / {{ cls.name }}{% endblock %}
+{% block content %}
+<div class="detail-grid">
+  <div>
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <h3 class="card-title"> Class Details</h3>
+        {% if user.is_admin %}
+        <div style="display:flex;gap:8px;">
+          <a href="{% url 'edit_class' cls.pk %}" class="btn btn-sm btn-warning"> Edit</a>
+          <a href="{% url 'delete_class' cls.pk %}" class="btn btn-sm btn-danger" data-confirm="Delete this class?">🗑</a>
+        </div>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <ul class="info-list">
+          <li><span class="info-label">Class Name</span><strong>{{ cls.name }}</strong></li>
+          <li><span class="info-label">Section</span>{{ cls.section|default:"—" }}</li>
+          <li><span class="info-label">Course</span><span class="badge badge-primary">{{ cls.course.code }}</span> {{ cls.course.name }}</li>
+          <li><span class="info-label">Teacher</span>{{ cls.teacher.get_full_name|default:"Not assigned" }}</li>
+          <li><span class="info-label">Schedule</span>{{ cls.schedule|default:"—" }}</li>
+          <li><span class="info-label">Room</span>{{ cls.room_number|default:"—" }}</li>
+          <li><span class="info-label">Students</span>{{ cls.students.count }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <h3 class="card-title"> Attendance</h3>
+        <div style="display:flex;gap:8px;">
+          {% if user.is_teacher or user.is_admin %}
+          <a href="{% url 'take_attendance' cls.pk %}" class="btn btn-sm btn-success">+ Take Attendance</a>
+          {% endif %}
+          <a href="{% url 'attendance_report' cls.pk %}" class="btn btn-sm btn-info"> Report</a>
+        </div>
+      </div>
+      {% if cls.sessions.all %}
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Date</th><th>Taken By</th><th>Present</th><th>Action</th></tr></thead>
+          <tbody>
+            {% for s in cls.sessions.all|slice:":5" %}
+            <tr>
+              <td>{{ s.date }}</td>
+              <td>{{ s.taken_by.get_full_name|default:"—" }}</td>
+              <td>{{ s.records.filter.count|default:"—" }}</td>
+              <td><a href="{% url 'session_detail' s.pk %}" class="btn btn-sm btn-secondary">View</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}<div class="empty-state" style="padding:20px;"><p>No attendance sessions yet</p></div>{% endif %}
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title"> Assignments</h3>
+        {% if user.is_teacher or user.is_admin %}
+        <a href="{% url 'create_assignment' %}" class="btn btn-sm btn-primary">+ Add</a>
+        {% endif %}
+      </div>
+      {% if cls.assignments.all %}
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Title</th><th>Due Date</th><th>Max Marks</th><th>Action</th></tr></thead>
+          <tbody>
+            {% for a in cls.assignments.all %}
+            <tr>
+              <td><a href="{% url 'assignment_detail' a.pk %}" style="font-weight:600;color:var(--primary);">{{ a.title }}</a></td>
+              <td>{{ a.due_date|date:"M d, Y"|default:"—" }}</td>
+              <td>{{ a.max_marks }}</td>
+              <td><a href="{% url 'assignment_detail' a.pk %}" class="btn btn-sm btn-secondary">View</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}<div class="empty-state" style="padding:20px;"><p>No assignments yet</p></div>{% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h3 class="card-title"> Students ({{ cls.students.count }})</h3></div>
+    {% if cls.students.all %}
+    <ul class="info-list" style="padding:0 20px;">
+      {% for s in cls.students.all %}
+      <li>
+        <div style="width:30px;height:30px;border-radius:50%;background:var(--success);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;">
+          {{ s.first_name|first|upper }}
+        </div>
+        <div>
+          <div style="font-weight:600;font-size:13px;">{{ s.get_full_name|default:s.username }}</div>
+          <div style="font-size:11px;color:var(--gray-400);">{{ s.email|default:s.username }}</div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<div class="empty-state" style="padding:24px;"><p>No students in this class</p></div>{% endif %}
+  </div>
+</div>
+{% endblock %}

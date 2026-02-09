@@ -1,0 +1,18 @@
+<!-- Confirm delete page for classes -->
+{% extends 'base.html' %}
+{% block title %}Confirm Delete — EduManage{% endblock %}
+{% block page_title %}Confirm Delete{% endblock %}
+{% block content %}
+<div class="confirm-card card">
+  <div class="card-body">
+    <div class="confirm-icon"></div>
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:8px;">Delete Confirmation</h2>
+    <p style="color:var(--gray-500);margin-bottom:24px;">Are you sure you want to delete <strong>{{ obj }}</strong>?<br/>This action cannot be undone.</p>
+    <form method="post" style="display:flex;gap:12px;justify-content:center;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger"> Yes, Delete</button>
+      <a href="{% url cancel_url %}" class="btn btn-secondary">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
