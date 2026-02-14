@@ -1,0 +1,55 @@
+<!-- Single session detail - all student records -->
+{% extends 'base.html' %}
+{% block title %}Session Detail — EduManage{% endblock %}
+{% block page_title %}Session Detail{% endblock %}
+{% block breadcrumb %}Attendance / {{ session.classroom.name }} / {{ session.date }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:700px;">
+  <div class="card-header">
+    <div>
+      <h3 class="card-title">📋 {{ session.classroom.name }} — {{ session.date }}</h3>
+      <p style="font-size:13px;color:var(--gray-400);margin-top:4px;">Taken by: {{ session.taken_by.get_full_name|default:"—" }}</p>
+    </div>
+    <div style="display:flex;gap:8px;">
+      {% if user.is_teacher or user.is_admin %}
+      <a href="{% url 'take_attendance' session.classroom.pk %}?date={{ session.date|date:'Y-m-d' }}" class="btn btn-sm btn-warning">✏️ Edit</a>
+      {% endif %}
+      <a href="{% url 'attendance_report' session.classroom.pk %}" class="btn btn-sm btn-info">📊 Report</a>
+    </div>
+  </div>
+  <div style="display:flex;gap:20px;padding:16px 24px;background:var(--gray-50);border-bottom:1px solid var(--gray-200);">
+    {% with records as recs %}
+    <div style="text-align:center;">
+      <div style="font-size:24px;font-weight:800;color:var(--success);">{{ records|length }}</div>
+      <div style="font-size:12px;color:var(--gray-400);">Total</div>
+    </div>
+    {% endwith %}
+  </div>
+  {% if records %}
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>#</th><th>Student</th><th>Status</th><th>Note</th></tr></thead>
+      <tbody>
+        {% for r in records %}
+        <tr>
+          <td style="color:var(--gray-400);">{{ forloop.counter }}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;">
+                {{ r.student.first_name|first|upper }}
+              </div>
+              {{ r.student.get_full_name|default:r.student.username }}
+            </div>
+          </td>
+          <td><span class="badge badge-{{ r.status }}">{{ r.get_status_display }}</span></td>
+          <td style="font-size:13px;color:var(--gray-500);">{{ r.note|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><p>No records for this session</p></div>
+  {% endif %}
+</div>
+{% endblock %}
