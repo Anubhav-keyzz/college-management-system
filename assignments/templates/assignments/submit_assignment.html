@@ -1,0 +1,41 @@
+<!-- Student assignment submission form -->
+{% extends 'base.html' %}
+{% block title %}Submit Assignment — EduManage{% endblock %}
+{% block page_title %}Submit Assignment{% endblock %}
+{% block breadcrumb %}Assignments / Submit{% endblock %}
+{% block content %}
+<div class="card" style="max-width:640px;">
+  <div class="card-header">
+    <h3 class="card-title"> Submit: {{ assignment.title }}</h3>
+    <input type="file" name="file"/>
+<div class="form-hint" style="color:var(--warning);font-weight:600;"> Max file size: 500 KB</div>
+  </div>
+  <div class="card-body">
+    <div style="padding:16px;background:var(--gray-50);border-radius:8px;margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div><span style="font-size:12px;color:var(--gray-400);">CLASS</span><div style="font-weight:600;font-size:14px;">{{ assignment.classroom.name }}</div></div>
+        <div><span style="font-size:12px;color:var(--gray-400);">DUE DATE</span><div style="font-weight:600;font-size:14px;">{{ assignment.due_date|date:"M d, Y H:i"|default:"No deadline" }}</div></div>
+        <div><span style="font-size:12px;color:var(--gray-400);">MAX MARKS</span><div style="font-weight:600;font-size:14px;">{{ assignment.max_marks }}</div></div>
+      </div>
+    </div>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Upload File <span style="font-weight:400;color:var(--gray-400);">(optional)</span></label>
+          <input type="file" name="file"/>
+          {% if submission.file %}<div class="form-hint">Current: <a href="{{ submission.file.url }}" target="_blank">{{ submission.file.name }}</a></div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label>Text Answer <span style="font-weight:400;color:var(--gray-400);">(optional)</span></label>
+          <textarea name="text" rows="6" placeholder="Write your answer here...">{{ submission.text|default:'' }}</textarea>
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top:20px;">
+        <button type="submit" class="btn btn-primary"> Submit Assignment</button>
+        <a href="{% url 'assignment_detail' assignment.pk %}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

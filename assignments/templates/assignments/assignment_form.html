@@ -1,0 +1,54 @@
+<!-- Assignment create/edit form -->
+{% extends 'base.html' %}
+{% block title %}{{ title }} — EduManage{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block breadcrumb %}Assignments / {{ title }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:680px;">
+  <div class="card-header"><h3 class="card-title">{{ title }}</h3></div>
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-grid form-grid-2">
+        <div class="form-group full-width">
+          <label>Title *</label>
+          <input type="text" name="title" value="{{ assignment.title|default:'' }}" required placeholder="Assignment title"/>
+        </div>
+        <div class="form-group">
+          <label>Class *</label>
+          <select name="classroom" required>
+            <option value="">— Select Class —</option>
+            {% for c in classes %}
+            <option value="{{ c.pk }}" {% if assignment.classroom_id == c.pk %}selected{% endif %}>
+              {{ c.name }} ({{ c.course.code }})
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Max Marks</label>
+          <input type="number" name="max_marks" value="{{ assignment.max_marks|default:100 }}" min="1"/>
+        </div>
+        <div class="form-group">
+          <label>Due Date</label>
+          <input type="datetime-local" name="due_date"
+            value="{% if assignment.due_date %}{{ assignment.due_date|date:'Y-m-d' }}T{{ assignment.due_date|time:'H:i' }}{% endif %}"/>
+        </div>
+        <div class="form-group">
+          <label>Attachment <span style="font-weight:400;color:var(--gray-400);">(optional, max 500kb size file )</span></label>
+          <input type="file" name="file"/>
+          {% if assignment.file %}<div class="form-hint">Current: <a href="{{ assignment.file.url }}" target="_blank">{{ assignment.file.name }}</a></div>{% endif %}
+        </div>
+        <div class="form-group full-width">
+          <label>Description</label>
+          <textarea name="description" placeholder="Assignment instructions...">{{ assignment.description|default:'' }}</textarea>
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top:20px;">
+        <button type="submit" class="btn btn-primary"> {{ action }}</button>
+        <a href="{% url 'assignment_list' %}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,117 @@
+<!-- Assignment detail - submissions list for teachers -->
+{% extends 'base.html' %}
+{% block title %}{{ assignment.title }} — EduManage{% endblock %}
+{% block page_title %}Assignment Detail{% endblock %}
+{% block breadcrumb %}Assignments / {{ assignment.title }}{% endblock %}
+{% block content %}
+<div class="detail-grid">
+  <div>
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <h3 class="card-title"> {{ assignment.title }}</h3>
+        <div style="display:flex;gap:8px;">
+          {% if user.is_student %}
+          <a href="{% url 'submit_assignment' assignment.pk %}" class="btn btn-sm btn-primary"> Submit</a>
+          {% endif %}
+          {% if user.is_admin or assignment.uploaded_by == user %}
+          <a href="{% url 'edit_assignment' assignment.pk %}" class="btn btn-sm btn-warning"> Edit</a>
+          <a href="{% url 'delete_assignment' assignment.pk %}" class="btn btn-sm btn-danger" data-confirm="Delete this assignment?">🗑</a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="card-body">
+        <ul class="info-list">
+          <li><span class="info-label">Class</span>{{ assignment.classroom.name }} ({{ assignment.classroom.course.code }})</li>
+          <li><span class="info-label">Uploaded By</span>{{ assignment.uploaded_by.get_full_name|default:assignment.uploaded_by.username }}</li>
+          <li><span class="info-label">Due Date</span>{{ assignment.due_date|date:"M d, Y H:i"|default:"No deadline" }}</li>
+          <li><span class="info-label">Max Marks</span>{{ assignment.max_marks }}</li>
+          <li><span class="info-label">Created</span>{{ assignment.created_at|date:"M d, Y" }}</li>
+          {% if assignment.file %}
+          <li><span class="info-label">File</span><a href="{{ assignment.file.url }}" class="btn btn-sm btn-info" target="_blank">📎 Download</a></li>
+          {% endif %}
+        </ul>
+        {% if assignment.description %}
+        <div style="margin-top:16px;padding:16px;background:var(--gray-50);border-radius:8px;">
+          <div style="font-size:12px;font-weight:600;color:var(--gray-400);margin-bottom:8px;">DESCRIPTION</div>
+          <p style="font-size:14px;line-height:1.6;">{{ assignment.description }}</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if user.is_student and submission %}
+    <div class="card">
+      <div class="card-header"><h3 class="card-title"> My Submission</h3></div>
+      <div class="card-body">
+        <ul class="info-list">
+          <li><span class="info-label">Submitted At</span>{{ submission.submitted_at|date:"M d, Y H:i" }}</li>
+          {% if submission.file %}<li><span class="info-label">File</span><a href="{{ submission.file.url }}" class="btn btn-sm btn-info" target="_blank">📎 Download</a></li>{% endif %}
+          <li><span class="info-label">Status</span>
+            {% if submission.is_graded %}<span class="badge badge-present">Graded</span>
+            {% else %}<span class="badge badge-pending">Pending Review</span>{% endif %}
+          </li>
+          {% if submission.is_graded %}
+          <li><span class="info-label">Marks</span><strong>{{ submission.marks }} / {{ assignment.max_marks }}</strong></li>
+          {% if submission.feedback %}<li><span class="info-label">Feedback</span>{{ submission.feedback }}</li>{% endif %}
+          {% endif %}
+        </ul>
+        {% if submission.text %}
+        <div style="margin-top:12px;padding:12px;background:var(--gray-50);border-radius:8px;">
+          <div style="font-size:12px;font-weight:600;color:var(--gray-400);margin-bottom:6px;">TEXT ANSWER</div>
+          <p style="font-size:13px;">{{ submission.text }}</p>
+        </div>
+        {% endif %}
+        <div style="margin-top:16px;">
+          <a href="{% url 'submit_assignment' assignment.pk %}" class="btn btn-warning"> Update Submission</a>
+        </div>
+      </div>
+    </div>
+    {% elif user.is_student %}
+    <div class="card">
+      <div class="card-body" style="text-align:center;padding:40px;">
+        <div style="font-size:40px;margin-bottom:12px;"></div>
+        <p style="margin-bottom:16px;color:var(--gray-500);">You haven't submitted this assignment yet.</p>
+        <a href="{% url 'submit_assignment' assignment.pk %}" class="btn btn-primary">Submit Now</a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if user.is_teacher or user.is_admin %}
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title"> Submissions ({{ submissions|length }})</h3>
+    </div>
+    {% if submissions %}
+    <ul class="info-list" style="padding:0 20px;">
+      {% for sub in submissions %}
+      <li style="flex-direction:column;align-items:flex-start;gap:6px;">
+        <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;">
+              {{ sub.student.first_name|first|upper }}
+            </div>
+            <div>
+              <div style="font-weight:600;font-size:13px;">{{ sub.student.get_full_name|default:sub.student.username }}</div>
+              <div style="font-size:11px;color:var(--gray-400);">{{ sub.submitted_at|date:"M d, Y H:i" }}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            {% if sub.is_graded %}
+            <span class="badge badge-present">{{ sub.marks }}/{{ assignment.max_marks }}</span>
+            {% else %}
+            <span class="badge badge-pending">Pending</span>
+            {% endif %}
+            <a href="{% url 'grade_submission' sub.pk %}" class="btn btn-sm btn-primary">Grade</a>
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state" style="padding:32px;"><div class="empty-icon">📋</div><p>No submissions yet</p></div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
