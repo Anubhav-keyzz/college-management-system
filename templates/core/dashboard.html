@@ -1,0 +1,218 @@
+<!-- Dashboard template - shows different stats per role -->
+{% extends 'base.html' %}
+{% block title %}Dashboard — EduManage{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block breadcrumb %}Welcome back, {{ user.get_full_name|default:user.username }}!{% endblock %}
+
+{% block content %}
+{% if user.is_admin %}
+<!-- ADMIN DASHBOARD -->
+ <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
+  <span style="font-size:13px;font-weight:600;color:var(--gray-500);"> Export Report:</span>
+  <a href="{% url 'export_excel' %}" class="btn btn-success"> Download Excel</a>
+  <a href="{% url 'export_pdf' %}" class="btn btn-danger">Download PDF</a>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon blue"></div>
+    <div class="stat-info"><div class="stat-value">{{ total_students }}</div><div class="stat-label">Total Students</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green"></div>
+    <div class="stat-info"><div class="stat-value">{{ total_teachers }}</div><div class="stat-label">Total Teachers</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon purple"></div>
+    <div class="stat-info"><div class="stat-value">{{ total_courses }}</div><div class="stat-label">Courses</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon cyan"></div>
+    <div class="stat-info"><div class="stat-value">{{ total_classes }}</div><div class="stat-label">Classes</div></div>
+  </div>
+  
+</div>
+
+<div class="detail-grid"> 
+  <div class="card">    
+    <div class="card-header">
+      <h3 class="card-title"> Recent Attendance Sessions</h3>
+      <a href="{% url 'attendance_list' %}" class="btn btn-sm btn-secondary">View All</a>
+    </div>
+    {% if recent_sessions %}
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Class</th><th>Date</th><th>Taken By</th></tr></thead>
+        <tbody>
+          {% for s in recent_sessions %}
+          <tr>
+            <td><a href="{% url 'session_detail' s.pk %}">{{ s.classroom }}</a></td>
+            <td>{{ s.date }}</td>
+            <td>{{ s.taken_by.get_full_name|default:s.taken_by.username }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}<div class="empty-state"><div class="empty-icon"></div><p>No sessions yet</p></div>{% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title"> Recent Assignments</h3>
+      <a href="{% url 'assignment_list' %}" class="btn btn-sm btn-secondary">View All</a>
+    </div>
+    {% if recent_assignments %}
+    <ul class="info-list" style="padding:0 24px;">
+      {% for a in recent_assignments %}
+      <li>
+        <span class="nav-icon"></span>
+        <div>
+          <a href="{% url 'assignment_detail' a.pk %}" style="font-weight:600;color:var(--primary);">{{ a.title }}</a>
+          <div style="font-size:12px;color:var(--gray-400);">{{ a.classroom }} · {{ a.created_at|date:"M d" }}</div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<div class="empty-state"><div class="empty-icon"></div><p>No assignments yet</p></div>{% endif %}
+  </div>
+</div>
+
+<div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;">
+  <a href="{% url 'create_user' %}" class="btn btn-primary"> Add User</a>
+  <a href="{% url 'create_course' %}" class="btn btn-success"> Add Course</a>
+  <a href="{% url 'create_class' %}" class="btn btn-info"> Add Class</a>
+  
+</div>
+
+{% elif user.is_teacher %}
+<!-- TEACHER DASHBOARD -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon blue"></div>
+    <div class="stat-info"><div class="stat-value">{{ my_classes|length }}</div><div class="stat-label">My Classes</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green"></div>
+    <div class="stat-info"><div class="stat-value">{{ total_students }}</div><div class="stat-label">My Students</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon purple"></div>
+    <div class="stat-info"><div class="stat-value">{{ my_courses }}</div><div class="stat-label">My Courses</div></div>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title"> My Classes</h3>
+      <a href="{% url 'class_list' %}" class="btn btn-sm btn-secondary">View All</a>
+    </div>
+    {% if my_classes %}
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Class</th><th>Course</th><th>Students</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for c in my_classes %}
+          <tr>
+            <td><strong>{{ c.name }}</strong>{% if c.section %} <span class="badge badge-info">{{ c.section }}</span>{% endif %}</td>
+            <td>{{ c.course.code }}</td>
+            <td>{{ c.students.count }}</td>
+            <td>
+              <a href="{% url 'take_attendance' c.pk %}" class="btn btn-sm btn-success"> Attend</a>
+              <a href="{% url 'attendance_report' c.pk %}" class="btn btn-sm btn-secondary"> Report</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}<div class="empty-state"><div class="empty-icon"></div><p>No classes assigned</p></div>{% endif %}
+  </div>
+<!-- ASSIGNMENT DASHBOARD -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title"> Recent Assignments</h3>
+      <a href="{% url 'create_assignment' %}" class="btn btn-sm btn-primary">+ New</a>
+    </div>
+    {% if recent_assignments %}
+    <ul class="info-list" style="padding:0 24px;">
+      {% for a in recent_assignments %}
+      <li>
+        <span></span>
+        <div>
+          <a href="{% url 'assignment_detail' a.pk %}" style="font-weight:600;color:var(--primary);">{{ a.title }}</a>
+          <div style="font-size:12px;color:var(--gray-400);">{{ a.classroom }} · {{ a.submissions.count }} submissions</div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<div class="empty-state"><div class="empty-icon"></div><p>No assignments yet</p></div>{% endif %}
+  </div>
+</div>
+
+{% else %}
+<!-- STUDENT DASHBOARD -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon blue"></div>
+    <div class="stat-info"><div class="stat-value">{{ my_courses|length }}</div><div class="stat-label">My Courses</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green"></div>
+    <div class="stat-info"><div class="stat-value">{{ my_classes|length }}</div><div class="stat-label">My Classes</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon {% if attendance_pct >= 75 %}green{% elif attendance_pct >= 50 %}orange{% else %}red{% endif %}"></div>
+    <div class="stat-info"><div class="stat-value">{{ attendance_pct }}%</div><div class="stat-label">Attendance</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon orange"></div>
+    <div class="stat-info"><div class="stat-value">{{ pending_fees|length }}</div><div class="stat-label">Pending Fees</div></div>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div class="card">
+    <div class="card-header"><h3 class="card-title"> My Assignments</h3><a href="{% url 'assignment_list' %}" class="btn btn-sm btn-secondary">View All</a></div>
+    {% if recent_assignments %}
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Title</th><th>Class</th><th>Due</th></tr></thead>
+        <tbody>
+          {% for a in recent_assignments %}
+          <tr>
+            <td><a href="{% url 'assignment_detail' a.pk %}" style="color:var(--primary);font-weight:600;">{{ a.title }}</a></td>
+            <td>{{ a.classroom.name }}</td>
+            <td>{{ a.due_date|date:"M d, Y"|default:"—" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}<div class="empty-state"><div class="empty-icon"></div><p>No assignments yet</p></div>{% endif %}
+  </div>
+
+  <div>
+    
+    <div class="card">
+      <div class="card-header"><h3 class="card-title"> My Classes</h3></div>
+      {% if my_classes %}
+      <ul class="info-list" style="padding:0 24px;">
+        {% for c in my_classes %}
+        <li>
+          <span></span>
+          <div>
+            <div style="font-weight:600;">{{ c.name }}</div>
+            <div style="font-size:12px;color:var(--gray-400);">{{ c.course.name }} · {{ c.teacher.get_full_name|default:"—" }}</div>
+          </div>
+          <a href="{% url 'attendance_report' c.pk %}" class="btn btn-sm btn-secondary" style="margin-left:auto;">Report</a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}<div class="empty-state"><div class="empty-icon"></div><p>No classes</p></div>{% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
